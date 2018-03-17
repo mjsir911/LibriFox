@@ -1803,50 +1803,37 @@ function DeviceStoragesManager(args) { // untested
     }
     
     this.eachDevice = function (func_each) {
-        nav.getDeviceStorages('sdcard').forEach(func_each);
+		func_each(undefined, 0);
+        //nav.getDeviceStorages('sdcard').forEach(func_each);
     }
 }
 
 function FileManager(args) {
     var that = this,
-        storage_device = args.storage_device,
-        mediaManager = args.mediaManager;
+        storage_device = args.storage_device;
     
     this.testForFile = function (path, result_callback) {
-        var request = storage_device.get(path);
-        request.onsuccess = function () {
-            result_callback(true, this);
-        };
-        request.onerror = function () {
-            result_callback(false, this);
-        }
-        
+		storage_device.root.getFile(path, {}, (fileEntry) => result_callback(true, this), (fileError) => result_callback(false, this))
     };
 
     this.addFile = function (blob, filepath) {
-        var deferred = {};
-        deferred.promise = new Promise((resolve, reject) => {
-            deferred.resolve = resolve;
-            deferred.reject = reject;
+		storage_device.root.getFile(filepath, { create: true, exclusive: false }, function(fileEntry) {
+			fileEntry.createWriter(function(fileWriter) {
+				fileWriter.write(blob);
+			}, console.error);
+		}, console.error);
+        return new Promise((resolve, reject) => {
+			resolve("hi")
         });
-        
-        if (!mediaManager.available) {
-            var error = {
-                name: 'The storage device is not currently available. Has it been mounted as a USB device or removed?'
-            }
-            deferred.reject(error);
-        } else {
-            var req = storage_device.addNamed(blob, filepath);
-            req.onsuccess = function () {
-                deferred.resolve(this.result);
-            }
-            req.onerror = function () {
-                deferred.reject(this.error);
-            }
-        }
-        
-        return deferred.promise;
-    };
+	}
+
+	this.mkdir = function (dirpath, root) {
+		root = root || storage_device.root;
+		dirpath = dirpath.split('/');
+		root.getDirectory(dirpath.splice(0, 1)[0], { create: true }, function(dirEntry) {
+			that.mkdir(dirpath.join('/'), dirEntry);
+		});
+	}
     
     this.deleteFile = function (filepath) {
         return new Promise(function (resolve, reject) {
@@ -1861,20 +1848,28 @@ function FileManager(args) {
         });
     }
     
-    this.getFileFromPath = function (path, success, error) {
-        var request = storage_device.get(path);
-        request.onsuccess = function () {
-            var file = this.result;
-            console.log('loaded file from ' + file.name);
-            success(file)
-        };
-        request.onerror = function () {
-            console.log('Error loading from ' + path, this.error);
-            error && error(this.error);
-        };
-    }
+	this.getFileFromPath = function (path, success, error) {
+
+		storage_device.root.getFile(path, {}, function(fileEntry) {
+
+			fileEntry.file(function (file) {
+				var reader = new FileReader();
+
+				reader.onloadend = function() {
+					console.log('loaded file from ' + file.name);
+					success(this.result)
+				};
+
+				reader.readAsText(file);
+
+			}, function() {
+				console.log('Error loading from ' + path, this.error);
+				error && error(this.error);
+			});},
+		console.error);
+	}
     
-    this.mozStorageDevice = storage_device;
+    this.storage_device = storage_device;
 }
 
 function SearchResultsPageGenerator(args) {
@@ -2049,6 +2044,11 @@ if (typeof navigator.getDeviceStorage === 'function') {
 
 function createApp () {
     'use strict';
+
+	//var storage_device; window.requestFileSystem(window.PERSISTENT, 0, function(fs) {storage_device = fs}); // no better solution for now
+	//while (!storage_device) {};
+
+	window.requestFileSystem(window.PERSISTENT, 0, function(storage_device) {
     
     var // define objects for page generation and background behavior
     settingsManager = new SettingsManager({
@@ -2056,8 +2056,7 @@ function createApp () {
     }),
     mediaManager = new MediaManager(),
     fileManager = new FileManager({
-        storage_device: navigator.getDeviceStorage('sdcard'),
-        mediaManager: mediaManager
+        storage_device: storage_device,
     }),
     httpRequestHandler = new HttpRequestHandler(),
     player = new Player({
@@ -2165,4 +2164,5 @@ function createApp () {
         page: '#mainSettings',
         folder_path_form: '#user-folder-form'
     });
+	}); // storage device
 }
