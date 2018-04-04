@@ -1817,22 +1817,30 @@ function FileManager(args) {
     };
 
     this.addFile = function (blob, filepath) {
-		storage_device.root.getFile(filepath, { create: true, exclusive: false }, function(fileEntry) {
-			fileEntry.createWriter(function(fileWriter) {
-				fileWriter.write(blob);
+		console.log("adding file: " + filepath);
+		this.mkdir(filepath.split('/').slice(0, -1).join('/'), storage_device.root, function() {
+			storage_device.root.getFile(filepath, { create: true, exclusive: false }, function(fileEntry) {
+				fileEntry.createWriter(function(fileWriter) {
+					console.log(blob.type);
+					fileWriter.write(blob);
+				}, console.error);
 			}, console.error);
-		}, console.error);
+		});
         return new Promise((resolve, reject) => {
-			resolve("hi")
+			resolve(filepath)
         });
 	}
 
-	this.mkdir = function (dirpath, root) {
+	this.mkdir = function (dirpath, root, callback) {
+		if (!dirpath) {
+			return callback();
+		}
 		root = root || storage_device.root;
 		dirpath = dirpath.split('/');
-		root.getDirectory(dirpath.splice(0, 1)[0], { create: true }, function(dirEntry) {
-			that.mkdir(dirpath.join('/'), dirEntry);
-		});
+		directory_to_create = dirpath.splice(0, 1)[0]
+		root.getDirectory(directory_to_create, { create: true, exclusive: false }, function(dirEntry) {
+			that.mkdir(dirpath.join('/'), dirEntry, callback);
+		}, console.error);
 	}
     
     this.deleteFile = function (filepath) {
