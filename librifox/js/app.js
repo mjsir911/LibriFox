@@ -730,6 +730,7 @@ function FilesystemBookReferenceManager(args) {
     }
     
     event_manager.registerEvent('change');
+
     mediaManager.on('created', event => {
         addChapters(event.detail).then(() => {
             event_manager.trigger('change', books)
@@ -823,11 +824,12 @@ function FilesystemBookReferenceManager(args) {
             all_enumerated_deferred.resolve = resolve;
             all_enumerated_deferred.reject = reject;
         });
+		/*
         if (mediaManager.db.state !== 'ready' && mediaManager.db.state !== 'enumerable') {
             mediaManager.db.addEventListener('enumerable', () => {
                 all_enumerated_deferred.resolve(this.dynamicLoadBooks(each_book_fn));
             })
-        } else { // trying to get errors to output here was a nightmare,
+        } else {*/ // trying to get errors to output here was a nightmare,
                  // maybe I'm not using promises correctly?
             mediaManager.enumerate(item => {
                 console.log('Got item in #enumerate:', item);
@@ -849,7 +851,7 @@ function FilesystemBookReferenceManager(args) {
                     throw e;
                 });
             });
-        }
+        //}
         return all_enumerated_deferred.promise;
     }
 }
@@ -938,14 +940,15 @@ function StoredBooksListPageGenerator(args) {
             console.warn('Selectors.page is falsy (undefined?), this ' +
                 'causes the page event to be registered for all pages');
         }
-        $(document).on('pagebeforeshow', selectors.page, function () {            
+        //$(document).on('pagebeforeshow', selectors.page, function () {            
             if (player.getCurrentInfo()) {
                 $('.player-shortcut-footer').show();
             } else {
                 $('.player-shortcut-footer').hide();
             }
-        });
-        $(document).on('pagecreate', selectors.page, function () {
+        //});
+        //$(document).on('pagecreate', selectors.page,
+		//function () {
             var $list = $(selectors.list);
             $list.children('li.stored-book').remove();
             fsReferenceManager.dynamicLoadBooks(function (book) {
@@ -955,7 +958,7 @@ function StoredBooksListPageGenerator(args) {
                     $list.listview('refresh');
                 }
             }).catch(e => console.error(e));
-        });
+        //});
     };
 
     function registerOptionsMenu(book) {
@@ -1411,11 +1414,14 @@ function Player(args) {
     
     this.playFromPath = function (path, options) {
         player_options = options || {};
+		console.log("top");
         fileManager.getFileFromPath(
             path,
             function (file) {
                 console.log(file.type, file);
-                getAudioElement().src = create_object_url_fn(file);
+                //getAudioElement().src = create_object_url_fn(file);
+				console.log("hi");
+                getAudioElement().src = "file://" + path
             }, error => {
                 onFileLoadError(path, error);
             }
@@ -1716,6 +1722,7 @@ function SettingsManager (args) {
             if (settings) {
                 resolve(settings[key]);
             } else {
+				console.log(key)
                 async_storage.getItem(st_settings_key, _settings => {
                     settings = _settings || generateDefaultSettings();
                     resolve(settings[key]);
@@ -1764,7 +1771,7 @@ function DeviceStoragesManager(args) { // untested
     'use strict'
     var settingsManager = args.settingsManager,
         downloads_storage_index,
-        downloads_storage_name,
+        //downloads_storage_name = "/home/phablet/.local/share/cordova-ubuntu/persistent",
         fileManager = args.fileManager,
         nav = args.navigator || navigator;
     
@@ -1777,7 +1784,8 @@ function DeviceStoragesManager(args) { // untested
             settingsManager.set('downloads_storage_device_index', index);
             downloads_storage_index = index;
             
-            downloads_storage_name = nav.getDeviceStorages('sdcard')[index].storageName;            
+            //downloads_storage_name = "test";            
+			//downloads_storage_name = nav.getDeviceStorages('sdcard')[index].storageName;            
         } else {
             console.error('The index ' + index + ' was not valid');
         }
@@ -1785,12 +1793,13 @@ function DeviceStoragesManager(args) { // untested
     
     Object.defineProperty(this, 'downloadsStorageName', {
         get: () => {
-            if (!downloads_storage_name) {
-                console.error('No name for current storage device!');
-                return '';
-            } else {
-                return '/' + downloads_storage_name + '/'
-            }
+            //if (!downloads_storage_name) {
+                //console.error('No name for current storage device!');
+                //return '';
+            //} else {
+			//return '/' + downloads_storage_name + '/'
+			return ''
+            //}
         }
     });
     
@@ -1865,10 +1874,10 @@ function FileManager(args) {
 
 				reader.onloadend = function() {
 					console.log('loaded file from ' + file.name);
-					success(this.result)
+					success(new Blob([new Uint8Array(this.result)], { type: "audio/mpeg" }))
 				};
 
-				reader.readAsText(file);
+				reader.readAsArrayBuffer(file);
 
 			}, function() {
 				console.log('Error loading from ' + path, this.error);
@@ -2044,11 +2053,14 @@ function HttpRequestHandler() {
 
 // Instantiate app if not running in test environment 
 // by checking if FXOS filesystem function is defined
-if (typeof navigator.getDeviceStorage === 'function') {
-    LazyLoader.load(['js/lib/async_storage.js', 'js/lib/mediadb.js'], () => {
+//if (typeof navigator.getDeviceStorage === 'function') {
+document.addEventListener("deviceready", function() {
+	LazyLoader.load(['js/lib/async_storage.js', 'js/lib/wrapper.js'], () => {
         createApp()
-    });
-}
+    });} , false);
+//}
+//
+//
 
 function createApp () {
     'use strict';
