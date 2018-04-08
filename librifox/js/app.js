@@ -223,21 +223,49 @@ function SearchedBookPageGenerator(args) {
     };
 }
 
+function getRedirectURL(url) {
+    return new Promise(function(resolve, reject) {
+        /*https://stackoverflow.com/a/333657/6381767*/
+        var http = new XMLHttpRequest();
+        http.open('HEAD', url);
+        http.onreadystatechange = function() {
+            if (this.readyState == this.DONE) {
+                resolve(this.responseURL);
+            }
+        };
+        http.onerror = reject
+        http.send();
+    });
+}
+
 function BookDownloadManager(args) {
     var that = this,
         httpRequestHandler = args.httpRequestHandler,
         storageManager = args.storageManager,
+        referenceManager = args.referenceManager;
         fileManager = args.fileManager;
     
-    function downloadFile(url, finished_callback, progress_callback) {
+    function downloadFile(url, path, finished_callback, progress_callback) {
         var req_progress_callback;
         var additional_args = {};
 
+        var fileTransfer = new FileTransfer()
+
         if (progress_callback) {
-            additional_args.progress_callback = function () {
-                progress_callback.apply(this, arguments)
-            };
+            fileTransfer.onprogress = progress_callback
         }
+
+        getRedirectURL(url).then(redirectedURL =>
+        fileTransfer.download(
+            redirectedURL,
+            "cdvfile://localhost/persistent/" + path,
+            finished_callback,
+            function(error) {
+                console.log("download error source " + error.source);
+                console.log("download error target " + error.target);
+                console.log("download error code" + error.code);
+            }))
+
         
         httpRequestHandler.getBlob(
             url,
@@ -276,13 +304,17 @@ function BookDownloadManager(args) {
             filepath,
             function (exists) {
                 if (!exists) {
-                    downloadFile(
-                        chapter_obj.url,
-                        function (response) {
-                            storageManager.writeChapter(response, book_obj, chapter_obj, finished_callback);
-                        },
-                        progress_callback
-                    );
+                    filepath = storageManager.getChapterFilePath(book_obj.id, chapter_obj.index);
+                    fileManager.mkdir(filepath.split('/').slice(0, -1).join('/'), undefined, function() {
+                        downloadFile(
+                            chapter_obj.url,
+                            filepath,
+                            function () {
+                                referenceManager.storeChapterReference(book_obj, chapter_obj, filepath, {reference_created: finished_callback}); 
+                            },
+                            progress_callback
+                        );
+                    });
                 } else {
                     console.warn('The file at ' + filepath + ' already exists.');
                     error_callback && error_callback();
@@ -298,26 +330,6 @@ function BookStorageManager(args) {
         deviceStoragesManager = args.deviceStoragesManager,
         referenceManager = args.referenceManager;
 
-    this.writeChapter = function (blob, book_obj, chapter_obj, func_done) {
-        var chPath = that.getChapterFilePath(book_obj.id, chapter_obj.index);
-        that.write(blob, chPath, function (saved_path) {
-            referenceManager.storeChapterReference(book_obj, chapter_obj, saved_path, {
-                reference_created: func_done
-            });
-        });
-    };
-
-    this.write = function (blob, path, success_fn) {
-        console.log('writing:', blob, path);
-        deviceStoragesManager.getStorage().addFile(blob, path).then(function (result) {
-            console.log('wrote: ' + result);
-            success_fn && success_fn(result);
-        }).catch(function (error) {
-            console.warn('Failed to write ' + path + ': ', error);
-            alert('Failed to write file: ' + error.name);
-        });
-    };
-    
     this.getChapterFilePath = function (book_id, chapter_index) {
         return deviceStoragesManager.downloadsStorageName + APP_DOWNLOADS_DIR + '/' + book_id + '/' + chapter_index + '.lfa';
     };
@@ -1825,21 +1837,6 @@ function FileManager(args) {
 		storage_device.root.getFile(path, {}, (fileEntry) => result_callback(true, this), (fileError) => result_callback(false, this))
     };
 
-    this.addFile = function (blob, filepath) {
-		console.log("adding file: " + filepath);
-		this.mkdir(filepath.split('/').slice(0, -1).join('/'), storage_device.root, function() {
-			storage_device.root.getFile(filepath, { create: true, exclusive: false }, function(fileEntry) {
-				fileEntry.createWriter(function(fileWriter) {
-					console.log(blob.type);
-					fileWriter.write(blob);
-				}, console.error);
-			}, console.error);
-		});
-        return new Promise((resolve, reject) => {
-			resolve(filepath)
-        });
-	}
-
 	this.mkdir = function (dirpath, root, callback) {
 		if (!dirpath) {
 			return callback();
@@ -2106,6 +2103,7 @@ function createApp () {
     bookDownloadManager = new BookDownloadManager({
         httpRequestHandler: httpRequestHandler,
         storageManager: bookStorageManager,
+        referenceManager: bookReferenceManager,
         fileManager: fileManager
     }),
     bookPlayerPageGenerator = new BookPlayerPageGenerator({
