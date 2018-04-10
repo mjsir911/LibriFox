@@ -1851,14 +1851,9 @@ function FileManager(args) {
     
     this.deleteFile = function (filepath) {
         return new Promise(function (resolve, reject) {
-            var req = storage_device.delete(filepath);
-            req.onsuccess = function () {
-                console.log(this, arguments);
-                resolve(this.result)
-            }
-            req.onerror = function () {
-                reject(this.error)
-            }
+			storage_device.root.getFile(filepath, {create:false}, function(fileEntry) {
+				fileEntry.remove(resolve, reject, reject);
+			});
         });
     }
     
