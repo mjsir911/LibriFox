@@ -1427,17 +1427,8 @@ function Player(args) {
     this.playFromPath = function (path, options) {
         player_options = options || {};
 		console.log("top");
-        fileManager.getFileFromPath(
-            path,
-            function (file) {
-                console.log(file.type, file);
-                //getAudioElement().src = create_object_url_fn(file);
-				console.log("hi");
-                getAudioElement().src = "file://" + path
-            }, error => {
-                onFileLoadError(path, error);
-            }
-        );
+		console.log(path)
+		fileManager.getNativeURL(path).then(function(realpath) {getAudioElement().src = realpath});
     }
     
     this.play = function () {
@@ -1848,6 +1839,15 @@ function FileManager(args) {
 			that.mkdir(dirpath.join('/'), dirEntry, callback);
 		}, console.error);
 	}
+
+	this.getNativeURL = function(cdvfilepath) {
+		return new Promise(function(resolve, reject) {
+			storage_device.root.getFile(cdvfilepath, {}, function(fileEntry) {
+				resolve(fileEntry.nativeURL);
+			}, reject);
+		});
+	}
+
     
     this.deleteFile = function (filepath) {
         return new Promise(function (resolve, reject) {
