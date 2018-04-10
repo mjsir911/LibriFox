@@ -23,14 +23,19 @@ var MediaDB = (function() {
 				asyncStorage.key(i, function(key) {
 					if (key.startsWith('bookid_')) {
 						asyncStorage.getItem(key, function(metadata) {
+							for (var key in metadata) { 
+								if (!isNaN(parseInt(key))) {
+									callback({name: metadata[parseInt(key)].path, metadata: metadata});
+								}
+							};
+							//callback({name: metadata[1].path, metadata: metadata});
+							console.log("HELLO");
 							console.log(metadata);
 						});
 					}
 				});
 		}
 		});
-		console.log(asyncStorage);
-		callback({name: '/home/phablet/.local/share/cordova-ubuntu/persistent/librifox/app_dl/1268/0.lfa', 'metadata': {}});
 
 	}
 	return MediaDB
