@@ -839,25 +839,20 @@ function FilesystemBookReferenceManager(args) {
                 console.log('Got item in #enumerate:', item);
                 p = p.then(() => {
                     console.log('Got item in #then:', item);
-                    if (item === null) {
-                        all_enumerated_deferred.resolve(books);
-                    } else {
-                        return standardizeItem(item).then(to_store => {
-                            if (books.setChapter(to_store.store_info, to_store.chapter_info)) {
-                                var stored_book = this.getBook(to_store.store_info.id);
-                                each_book_fn && each_book_fn(stored_book);
-                            }
-                        })
-                    }
+					return standardizeItem(item).then(to_store => {
+						if (books.setChapter(to_store.store_info, to_store.chapter_info)) {
+							var stored_book = this.getBook(to_store.store_info.id);
+							each_book_fn && each_book_fn(stored_book);
+						}
+					})
                     
                 }).catch(e => {
-                    all_enumerated_deferred.reject(e);
                     throw e;
                 });
             });
         });
 		mediaManager.db.trigger('enumerable');
-        return all_enumerated_deferred.promise;
+        return p;
     }
 }
 
