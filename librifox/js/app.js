@@ -1833,7 +1833,7 @@ function FileManager(args) {
 			directory_to_create = dirpath.splice(0, 1)[0]
 			console.log('creating directory: ' + directory_to_create)
 			root.getDirectory(directory_to_create, { create: true, exclusive: false }, function(dirEntry) {
-				that.mkdir(dirpath.join('/'), dirEntry).then(callback).catch(reject)
+				that.mkdir(dirpath.join('/'), dirEntry).then(resolve).catch(reject)
 			}, function(abc) {console.log(abc)});
 		});
 	}
