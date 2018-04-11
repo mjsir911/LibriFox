@@ -340,6 +340,7 @@ function BookReferenceManager(args) {
     var args = args || {},
         async_storage = args.asyncStorage,
         fileManager = args.fileManager,
+        mediaManager = args.mediaManager,
         obj_storage = {},
         that = this,
         JSON_PREFIX = this.JSON_PREFIX = 'bookid_',
@@ -384,7 +385,9 @@ function BookReferenceManager(args) {
             obj_storage[JSON_PREFIX + book_obj.id] = obj;
             options.reference_created && options.reference_created(obj);
             
-            return store_item(JSON_PREFIX + book_obj.id, obj);
+            var ret = store_item(JSON_PREFIX + book_obj.id, obj);
+			mediaManager.db.trigger('enumerable');
+			return ret
         });
     };
     
@@ -830,19 +833,8 @@ function FilesystemBookReferenceManager(args) {
     
     this.dynamicLoadBooks = (each_book_fn) => {
         books.store = {};
-        var p = Promise.resolve(),
-            all_enumerated_deferred = {};
-        all_enumerated_deferred.promise = new Promise((resolve, reject) => {
-            all_enumerated_deferred.resolve = resolve;
-            all_enumerated_deferred.reject = reject;
-        });
-		/*
-        if (mediaManager.db.state !== 'ready' && mediaManager.db.state !== 'enumerable') {
-            mediaManager.db.addEventListener('enumerable', () => {
-                all_enumerated_deferred.resolve(this.dynamicLoadBooks(each_book_fn));
-            })
-        } else {*/ // trying to get errors to output here was a nightmare,
-                 // maybe I'm not using promises correctly?
+        var p = Promise.resolve();
+		mediaManager.db.addEventListener('enumerable', () => {
             mediaManager.enumerate(item => {
                 console.log('Got item in #enumerate:', item);
                 p = p.then(() => {
@@ -863,7 +855,8 @@ function FilesystemBookReferenceManager(args) {
                     throw e;
                 });
             });
-        //}
+        });
+		mediaManager.db.trigger('enumerable');
         return all_enumerated_deferred.promise;
     }
 }
@@ -2080,7 +2073,8 @@ function createApp () {
     }),
     bookReferenceManager = new BookReferenceManager({
         asyncStorage: asyncStorage,
-        fileManager: fileManager
+        fileManager: fileManager,
+        mediaManager: mediaManager
     }),
     bookStorageManager = new BookStorageManager({
         deviceStoragesManager: deviceStoragesManager,
