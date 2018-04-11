@@ -300,12 +300,12 @@ function BookDownloadManager(args) {
         
         // assumes that #writeChapter will always write following this pattern, which could cause problems
         var filepath = storageManager.getChapterFilePath(book_obj.id, chapter_obj.index);
-        fileManager.testForFile(
-            filepath,
-            function (exists) {
+        fileManager.testForFile(filepath)
+            .then((exists) => {
+				console.log(exists);
                 if (!exists) {
                     filepath = storageManager.getChapterFilePath(book_obj.id, chapter_obj.index);
-                    fileManager.mkdir(filepath.split('/').slice(0, -1).join('/'), undefined, function() {
+                    fileManager.mkdir(filepath.split('/').slice(0, -1).join('/')).then(() => {
                         downloadFile(
                             chapter_obj.url,
                             filepath,
@@ -314,13 +314,12 @@ function BookDownloadManager(args) {
                             },
                             progress_callback
                         );
-                    });
+                    }).catch(console.err);
                 } else {
                     console.warn('The file at ' + filepath + ' already exists.');
                     error_callback && error_callback();
                 }
-            }
-        );
+            }).catch(console.err);
     }
 }
 
@@ -1812,20 +1811,31 @@ function FileManager(args) {
     var that = this,
         storage_device = args.storage_device;
     
-    this.testForFile = function (path, result_callback) {
-		storage_device.root.getFile(path, {}, (fileEntry) => result_callback(true, this), (fileError) => result_callback(false, this))
+    this.testForFile = function (path) {
+		return new Promise((resolve, reject) =>
+			storage_device.root.getFile(path, {},
+				(fileEntry) => resolve(true),
+				(fileError) => {
+					if (fileError.code === 1) {
+						resolve(false)
+					} else {
+						reject(fileError)
+					}}));
     };
 
-	this.mkdir = function (dirpath, root, callback) {
-		if (!dirpath) {
-			return callback();
-		}
-		root = root || storage_device.root;
-		dirpath = dirpath.split('/');
-		directory_to_create = dirpath.splice(0, 1)[0]
-		root.getDirectory(directory_to_create, { create: true, exclusive: false }, function(dirEntry) {
-			that.mkdir(dirpath.join('/'), dirEntry, callback);
-		}, console.error);
+	this.mkdir = function(dirpath, root) {
+		return new Promise((resolve, reject) => {
+			if (!dirpath) {
+				return resolve();
+			}
+			root = root || storage_device.root;
+			dirpath = dirpath.split('/');
+			directory_to_create = dirpath.splice(0, 1)[0]
+			console.log('creating directory: ' + directory_to_create)
+			root.getDirectory(directory_to_create, { create: true, exclusive: false }, function(dirEntry) {
+				that.mkdir(dirpath.join('/'), dirEntry).then(callback).catch(reject)
+			}, function(abc) {console.log(abc)});
+		});
 	}
 
 	this.getNativeURL = function(cdvfilepath) {
