@@ -309,6 +309,7 @@ function BookDownloadManager(args) {
                     }).catch(console.err);
                 } else {
                     console.warn('The file at ' + filepath + ' already exists.');
+					referenceManager.storeChapterReference(book_obj, chapter_obj, filepath, {reference_created: finished_callback}); 
                     error_callback && error_callback();
                 }
             }).catch(console.err);
