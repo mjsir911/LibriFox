@@ -265,14 +265,6 @@ function BookDownloadManager(args) {
                 console.log("download error target " + error.target);
                 console.log("download error code" + error.code);
             }))
-
-        
-        httpRequestHandler.getBlob(
-            url,
-            function (xhr) {
-                finished_callback(xhr.response);
-            },
-            additional_args);
     }
     
     this.forceDownloadChapter = function (args) {
