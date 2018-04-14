@@ -25,14 +25,14 @@ var MediaDB = (function() {
 				asyncStorage.key(i, function(key) {
 					if (key.startsWith('bookid_')) {
 						asyncStorage.getItem(key, function(metadata) {
-							for (var chapterNum in metadata) { 
-								if (!isNaN(parseInt(chapterNum))) {
+							for (var areYouKiddingMe in metadata) { 
+								if (!isNaN(parseInt(areYouKiddingMe))) {
+									var chapterNum = areYouKiddingMe;
 									var chapter = metadata[parseInt(chapterNum)];
 									that.mediaType.testForFile(chapter.path).then((exists) => {
 										if (exists) {
 											callback({name: chapter.path, metadata: metadata});
 										} else {
-											console.log('deleting chapter' + chapterNum + 'of book ' + key);
 											asyncStorage.getItem(key, book => {
 												delete book[chapterNum]
 												asyncStorage.setItem(key, book);
