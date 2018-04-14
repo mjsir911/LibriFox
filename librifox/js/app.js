@@ -610,13 +610,14 @@ var MediaDBMetadataParser = (function () {
     };
 })()
 
-function MediaManager() {
+function MediaManager(args) {
         'use strict';
         var db,
             event_manager,
+			fileManager = args.fileManager,
             available = false;
 
-        db = new MediaDB("sdcard", MediaDBMetadataParser.getParser(ID3Parser), {
+        db = new MediaDB(fileManager, MediaDBMetadataParser.getParser(ID3Parser), {
             includeFilter: /[^\.]+\.lfa$/,
             version: 1
         });
@@ -2056,10 +2057,10 @@ function createApp () {
     settingsManager = new SettingsManager({
         asyncStorage: asyncStorage
     }),
-    mediaManager = new MediaManager(),
     fileManager = new FileManager({
         storage_device: storage_device,
     }),
+    mediaManager = new MediaManager({fileManager: fileManager}),
     httpRequestHandler = new HttpRequestHandler(),
     player = new Player({
         fileManager: fileManager

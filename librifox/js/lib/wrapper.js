@@ -1,6 +1,7 @@
 var MediaDB = (function() {
 	function MediaDB(mediaType, metadataParser, options) {
 		EventManager.call(this);
+		this.mediaType = mediaType;
 		this.metadataParser = metadataParser
 	}
 	MediaDB.prototype = Object.create(EventManager.prototype);
@@ -18,19 +19,32 @@ var MediaDB = (function() {
 	MediaDB.prototype.enumerate = function(callback) { 
 		// Iterate through all media files in the directory
 		// do callback on any media file in the directory {'name': path_of_file, 'metadata': something?}
+		var that = this;
 		asyncStorage.length(function(length) {
 			for (let i = 0; i < length; i++) {
 				asyncStorage.key(i, function(key) {
 					if (key.startsWith('bookid_')) {
 						asyncStorage.getItem(key, function(metadata) {
-							for (var key in metadata) { 
-								if (!isNaN(parseInt(key))) {
-									callback({name: metadata[parseInt(key)].path, metadata: metadata});
+							var isEmpty = true;
+							for (var chapterNum in metadata) { 
+								if (!isNaN(parseInt(chapterNum))) {
+									var chapter = metadata[parseInt(chapterNum)];
+									that.mediaType.testForFile(chapter.path).then((exists) => {
+										if (exists) {
+											callback({name: chapter.path, metadata: metadata});
+										} else {
+											console.log('deleting chapter' + chapterNum + 'of book ' + key);
+											asyncStorage.getItem(key, book => {
+												delete book[chapterNum]
+												asyncStorage.setItem(key, book);
+											});
+										}
+									})
 								}
 							};
-							//callback({name: metadata[1].path, metadata: metadata});
-							console.log("HELLO");
-							console.log(metadata);
+							if (isEmpty) {
+								asyncStorage.removeItem(key);
+							}
 						});
 					}
 				});
