@@ -25,7 +25,6 @@ var MediaDB = (function() {
 				asyncStorage.key(i, function(key) {
 					if (key.startsWith('bookid_')) {
 						asyncStorage.getItem(key, function(metadata) {
-							var isEmpty = true;
 							for (var chapterNum in metadata) { 
 								if (!isNaN(parseInt(chapterNum))) {
 									var chapter = metadata[parseInt(chapterNum)];
@@ -37,14 +36,14 @@ var MediaDB = (function() {
 											asyncStorage.getItem(key, book => {
 												delete book[chapterNum]
 												asyncStorage.setItem(key, book);
+												// TODO: delete entire item if
+												// is empty
+												});
 											});
 										}
 									})
 								}
 							};
-							if (isEmpty) {
-								asyncStorage.removeItem(key);
-							}
 						});
 					}
 				});
