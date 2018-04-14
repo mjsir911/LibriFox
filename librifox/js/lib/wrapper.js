@@ -39,17 +39,15 @@ var MediaDB = (function() {
 												// TODO: delete entire item if
 												// is empty
 												});
-											});
 										}
-									})
+									});
 								}
 							};
 						});
 					}
 				});
-		}
+			}
 		});
-
 	}
 	return MediaDB
 }());
