@@ -25,24 +25,27 @@ var MediaDB = (function() {
 				asyncStorage.key(i, function(key) {
 					if (key.startsWith('bookid_')) {
 						asyncStorage.getItem(key, function(metadata) {
-							for (var areYouKiddingMe in metadata) { 
-								if (!isNaN(parseInt(areYouKiddingMe))) {
-									var chapterNum = areYouKiddingMe;
+							Object.keys(metadata).forEach(chapterNum => {
+								if (!isNaN(parseInt(chapterNum))) {
 									var chapter = metadata[parseInt(chapterNum)];
 									that.mediaType.testForFile(chapter.path).then((exists) => {
 										if (exists) {
+											console.log(chapter, metadata);
 											callback({name: chapter.path, metadata: metadata});
 										} else {
+											/*
 											asyncStorage.getItem(key, book => {
 												delete book[chapterNum]
 												asyncStorage.setItem(key, book);
+												//that.trigger('deleted');
 												// TODO: delete entire item if
 												// is empty
 												});
+											*/
 										}
 									});
 								}
-							};
+							});
 						});
 					}
 				});
