@@ -1016,6 +1016,7 @@ function StoredBookPageGenerator(args) {
     
     var that = this,
         player_data_handle = args.player_data_handle,
+		mediaManager = args.mediaManager,
         ui_state = {};
     
     this.getDataHandle = function () {
@@ -1054,6 +1055,7 @@ function StoredBookPageGenerator(args) {
                             file_delete_success: function () {
                                 $(that).remove();
                                 $(selectors.page + ' ul').listview('refresh');
+								mediaManager.db.trigger('deleted', {detail: [chapter_ref.path]});
                                 if (ui_state.book.numChapters === 0) {
                                     $.mobile.back();
                                 }
@@ -2100,6 +2102,7 @@ function createApp () {
     }),
     storedBookPageGenerator = new StoredBookPageGenerator({
         player_data_handle: bookPlayerPageGenerator.getDataHandle(),
+		mediaManager: mediaManager
     }),
     searchedBookPageGenerator = new SearchedBookPageGenerator({
         httpRequestHandler: httpRequestHandler,
