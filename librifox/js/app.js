@@ -954,7 +954,7 @@ function StoredBooksListPageGenerator(args) {
         //});
     };
 
-    function registerOptionsMenu(book) {
+    function registerOptionsMenu(element, book) {
         var delete_book_fn = function () {
             book.eachChapter(chapter_ref => {
                 console.log("deleting", chapter_ref);
@@ -970,6 +970,7 @@ function StoredBooksListPageGenerator(args) {
                 });
                 $(selectors.book_actions_popup).popup('close');
             });
+			element.remove();
         }
 
         return function() {
@@ -1004,10 +1005,9 @@ function StoredBooksListPageGenerator(args) {
                 stored_chapters_data_handle(book_obj);
             }
         });
-        return $('<li/>', {
-            'class': 'stored-book',
-            html: link
-        }).bind('taphold', registerOptionsMenu(book_obj));
+		var element = $('<li/>', { 'class': 'stored-book', html: link })
+			
+		return element.bind('taphold', registerOptionsMenu(element[0], book_obj));
     }
 }
 
