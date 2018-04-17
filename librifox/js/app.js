@@ -2041,7 +2041,7 @@ function HttpRequestHandler() {
 // by checking if FXOS filesystem function is defined
 //if (typeof navigator.getDeviceStorage === 'function') {
 document.addEventListener("deviceready", function() {
-	LazyLoader.load(['js/lib/async_storage.js', 'js/lib/wrapper.js'], () => {
+	LazyLoader.load(['js/lib/async_storage.js', 'js/lib/mediadb.js'], () => {
         createApp()
     });} , false);
 //}
