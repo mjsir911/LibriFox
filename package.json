@@ -4,17 +4,20 @@
   "version": "1.0.1",
   "description": "Librivox audio book player",
   "main": "index.js",
-  "dependencies": {},
-  "devDependencies": {},
-  "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mjsir911/LibriFox#v1.0.0"
+  "scripts": {
+    "prepare": "cordova prepare ubuntu",
+    "build": "npm run-script prepare && clickable build --output build.click",
+    "clean": "rm -rf plugins/ platforms/"
+  },
+  "dependencies" : {
   },
   "author": "Marco Sirabella",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mjsir911/LibriFox/issues"
-  },
-  "homepage": "https://github.com/mjsir911/LibriFox"
+  "license": "Apache-2.0",
+  "cordova": {
+    "plugins": {
+    },
+    "platforms": [
+      "ubuntu"
+    ]
+  }
 }
