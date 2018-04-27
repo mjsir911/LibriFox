@@ -1,7 +1,8 @@
 {
-  "name": "LibriFox",
-  "version": "1.0.0",
-  "description": "LibriFox is a Firefox OS audio book player for LibriVox audio books.",
+  "name": "librifox.mjsir911",
+  "displayName": "LibriFox",
+  "version": "1.0.1",
+  "description": "Librivox audio book player",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {},
