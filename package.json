@@ -4,6 +4,10 @@
   "version": "1.0.1",
   "description": "Librivox audio book player",
   "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/mjsir911/LibriFox/issues",
+    "email": "marco@sirabella.org"
+  },
   "scripts": {
     "prepare": "cordova prepare ubuntu",
     "build": "npm run-script prepare && clickable build --output build.click",
