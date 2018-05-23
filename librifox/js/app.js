@@ -1307,7 +1307,7 @@ function Player(args) {
     var audio_element,
         create_object_url_fn = args.createObjectURL || URL.createObjectURL,
         fileManager = args.fileManager,
-        player_options,
+        player_options = {},
         current_info,
         event_manager = new EventManager(),
         that = this;
@@ -1395,8 +1395,7 @@ function Player(args) {
                 that.playFromPath(next.path, player_options);
             } else {
                 console.log('Ending playback, no next chapter.');
-                audio_element.src = undefined;
-                audio_element.load();
+				audio_element = getAudioElement(undefined)
                 var old_info = current_info;
                 current_info = undefined;
                 event_manager.trigger('finishedqueue', old_info);
@@ -1411,11 +1410,12 @@ function Player(args) {
         player_options = options || {};
 		console.log("top");
 		console.log(path)
-		fileManager.getNativeURL(path).then(function(realpath) {getAudioElement().src = realpath});
+		fileManager.getNativeURL(path).then(function(realpath) {audio_element = getAudioElement(realpath)});
     }
     
     this.play = function () {
         event_manager.trigger('play');
+	console.log('### play', audio_element)
         audio_element.play();
     }
     this.pause = function () {
@@ -1430,27 +1430,41 @@ function Player(args) {
         }
     }
     this.paused = function () {
-        return audio_element.paused;
+        return this._paused;
     }
     
     this.position = function (desired_time) {
         if (arguments.length === 0) {
-            return audio_element ? audio_element.currentTime : NaN;
+            return audio_element ? audio_element._position : NaN;
         } else {
-            audio_element.currentTime = desired_time;
+            audio_element.seekTo(desired_time);
         }
     };
     this.positionPercent = function (desired_percentage) {
+	// BUG: getDuration() might be -1
          if (arguments.length === 0) {
-            return audio_element.currentTime / audio_element.duration;
+            return audio_element._position / audio_element.getDuration();
         } else {
-            audio_element.currentTime = desired_percentage * audio_element.duration;
+            this.position(desired_percentage * audio_element.getDuration());
         }
     }
-    this.duration = function () {
-        return audio_element.duration;
+    this.duration = function() {
+		return new Promise((resolve, reject) => {
+// https://cordova.apache.org/docs/en/latest/reference/cordova-plugin-media/
+var counter = 0;
+var timerDur = setInterval(function() {
+    counter = counter + 100;
+    if (counter > 2000) {
+        clearInterval(timerDur);
     }
-    
+    var dur = audio_element.getDuration();
+    if (dur > 0) {
+        clearInterval(timerDur);
+	resolve(dur);
+    }
+}, 100);
+		})
+    }
     // TODO: this function doesn't belong here :(
     this.prettifyTime = function (float_secs, joiner) {
         var remove_decimal = function (num) {
@@ -1477,21 +1491,35 @@ function Player(args) {
         return arr.join(joiner);
     }
     
-    function getAudioElement () {
-        if (!audio_element) {
-            audio_element = new Audio();
+    function getAudioElement (src) {
+		audio_element = new Media(String(src), undefined, () => {console.log("PlayerError")}, status => {
+			console.log('% status: ', status)
+			switch(status) {
+				case 2:
+					audio_element.paused = false
+					break;
+				case 3:
+					audio_element.paused = true
+					break;
+				case 4:
+					onEnded()
+					break
+			}
+		});
+		audio_element.paused = true
+		console.log('getAudioElement')
 
-            if (navigator.mozAudioChannelManager) {
-                navigator.mozAudioChannelManager.volumeControlChannel = 'content';
-            }
-            audio_element.mozAudioChannelType = 'content';
-            
-            audio_element.addEventListener('loadedmetadata', onMetadataLoad);
-            audio_element.addEventListener('loadeddata', onLoad);
-            audio_element.addEventListener('ended', onEnded);
-            audio_element.addEventListener('timeupdate', onTimeUpdate);
-            audio_element.addEventListener('error', onPlayerError);
-        }
+		onMetadataLoad()
+		onLoad()
+
+		let my_audio_element = audio_element
+		let myInterval = setInterval(() => {
+			//console.log('AUDIO HELPER', my_audio_element, my_audio_element == audio_element);
+			if (my_audio_element != audio_element) {
+				clearInterval(myInterval)
+			}
+			onTimeUpdate()
+		}, 1000)
         
         return audio_element
     }
@@ -1674,8 +1702,11 @@ function BookPlayerPageGenerator(args) {
             $(selectors.book_title).text(player.getCurrentInfo().book.title);
             $(selectors.chapter_title).text(player.getCurrentInfo().chapter.name);
             
+			player.duration().then((duration) => {
+			console.log(duration)
+            	$(concatSelectors(controls.container, controls.duration_text)).text(player.prettifyTime(duration));
+			})
             player.position() && $(concatSelectors(controls.container, controls.position_text)).text(player.prettifyTime(player.position()));
-            player.duration() && $(concatSelectors(controls.container, controls.duration_text)).text(player.prettifyTime(player.duration()));
         } else {
             console.warn('player.getCurrentInfo() is falsy');
         }
