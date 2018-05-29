@@ -1920,6 +1920,7 @@ function SearchResultsPageGenerator(args) {
             $(selectors.form).submit(function (event) {
                 $(selectors.results_list).empty();
                 var input = $(selectors.search).val();
+				$(selectors.search).blur();
                 that.displayResults(input);
                 return false;
             });
