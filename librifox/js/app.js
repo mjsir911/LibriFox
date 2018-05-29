@@ -150,12 +150,10 @@ function SearchedBookPageGenerator(args) {
             }),
             click: function () {
                 var that = this;
-                if (confirm('You are about to download ' + get_num_chapters() + ' chapters. Data usage may apply. Are you sure?')) {
-                    book.chapters.forEach(function (chapter) {
-                        var chapter_list_element = $('[chapter-index="' + chapter.index + '"]');
-                        downloadChapterWithCbk(book, chapter, chapter_list_element);
-                    });
-                }
+                book.chapters.forEach(function (chapter) {
+                    var chapter_list_element = $('[chapter-index="' + chapter.index + '"]');
+                    downloadChapterWithCbk(book, chapter, chapter_list_element);
+                });
             }
         }).attr('data-icon', 'arrow-d');
         $dl_all.append(PROGRESSBAR_HTML);
