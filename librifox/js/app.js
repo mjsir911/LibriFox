@@ -1920,7 +1920,6 @@ function SearchResultsPageGenerator(args) {
             $(selectors.form).submit(function (event) {
                 $(selectors.results_list).empty();
                 var input = $(selectors.search).val();
-				$(selectors.search).blur();
                 that.displayResults(input);
                 return false;
             });
@@ -1969,6 +1968,7 @@ function SearchResultsPageGenerator(args) {
             } else {
                 $(selectors.no_results_msg).show();
             }
+			$(selectors.search).blur();
         });
         
         if (search_string.toLocaleLowerCase().startsWith('the ')) {
