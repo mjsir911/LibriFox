@@ -1087,7 +1087,7 @@ function StoredBookPageGenerator(args) {
             
             Object.keys(frequency).forEach(storage_device => {
                 var num_chapters = frequency[storage_device];
-                string_arr.push(storage_device + ': ' + num_chapters + ' file' + (num_chapters === 1 ? '' : 's'));
+                string_arr.push(((storage_device + ': ') ? storage_device : '') + num_chapters + ' file' + (num_chapters === 1 ? '' : 's'));
             });
             $(selectors.storage_device_info).text(string_arr.join(', '));
             
@@ -1107,7 +1107,7 @@ function StoredBookPageGenerator(args) {
         if (match) {
             return match[1];
         } else {
-            return 'Unknown storage';
+            return '';
         }
     }
     
