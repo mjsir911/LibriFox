@@ -1,27 +1,36 @@
 {
-  "name": "librifox.mjsir911",
-  "displayName": "LibriFox",
-  "version": "1.0.1",
-  "description": "Librivox audio book player",
-  "main": "index.js",
-  "bugs": {
-    "url": "https://github.com/mjsir911/LibriFox/issues",
-    "email": "marco@sirabella.org"
-  },
-  "scripts": {
-    "prepare": "cordova prepare ubuntu",
-    "build": "npm run-script prepare && clickable build --output build.click",
-    "clean": "rm -rf plugins/ platforms/"
-  },
-  "dependencies" : {
-  },
-  "author": "Marco Sirabella",
-  "license": "Apache-2.0",
-  "cordova": {
-    "plugins": {
+    "name": "librifox.mjsir911",
+    "displayName": "LibriFox",
+    "version": "1.0.1",
+    "description": "Librivox audio book player",
+    "main": "index.js",
+    "bugs": {
+        "url": "https://github.com/mjsir911/LibriFox/issues",
+        "email": "marco@sirabella.org"
     },
-    "platforms": [
-      "ubuntu"
-    ]
-  }
+    "scripts": {
+        "prepare": "cordova prepare ubuntu",
+        "build": "npm run-script prepare && clickable build --output build.click",
+        "clean": "rm -rf plugins/ platforms/"
+    },
+    "dependencies": {
+        "cordova-plugin-file": "^5.0.0",
+        "cordova-plugin-file-transfer": "^1.7.1",
+        "cordova-plugin-media": "^4.0.0",
+        "cordova-plugin-whitelist": "^1.3.3",
+        "cordova-ubuntu": "^4.3.4"
+    },
+    "author": "Marco Sirabella",
+    "license": "Apache-2.0",
+    "cordova": {
+        "plugins": {
+            "cordova-plugin-file": {},
+            "cordova-plugin-file-transfer": {},
+            "cordova-plugin-media": {},
+            "cordova-plugin-whitelist": {}
+        },
+        "platforms": [
+            "ubuntu"
+        ]
+    }
 }
