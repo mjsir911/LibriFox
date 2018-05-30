@@ -1880,16 +1880,20 @@ function FileManager(args) {
         });
     }
     
-	this.getFileFromPath = function (path, success, error) {
+	this.getFileFromPath = function (path, success, error, filetype = "audio/mpeg", filesize) {
 
 		storage_device.root.getFile(path, {}, function(fileEntry) {
 
 			fileEntry.file(function (file) {
+				if (filesize > 0) {
+					file.end = file.start + filesize;
+				}
+
 				var reader = new FileReader();
 
 				reader.onloadend = function() {
 					console.log('loaded file from ' + file.name);
-					success(new Blob([new Uint8Array(this.result)], { type: "audio/mpeg" }))
+					success(new Blob([new Uint8Array(this.result)], { type: filetype }))
 				};
 
 				reader.readAsArrayBuffer(file);
