@@ -618,7 +618,8 @@ function MediaManager(args) {
 
         db = new MediaDB(fileManager, MediaDBMetadataParser.getParser(ID3Parser), {
             includeFilter: /[^\.]+\.lfa$/,
-            version: 1
+            version: 1,
+			fileManager: fileManager
         });
         db.addEventListener('created', createdEvent);
         db.addEventListener('deleted', deletedEvent);
@@ -1848,6 +1849,8 @@ function FileManager(args) {
 					}}));
     };
 
+	this.walk = (subdirectory = "/") => new Promise((resolve, reject) => this.storage_device.root.getDirectory(subdirectory, {}, (subdirectory_dir) => subdirectory_dir.createReader().readEntries(resolve, reject), console.err))
+
 	this.mkdir = function(dirpath, root) {
 		return new Promise((resolve, reject) => {
 			if (!dirpath) {
@@ -1880,29 +1883,17 @@ function FileManager(args) {
         });
     }
     
-	this.getFileFromPath = function (path, success, error, filetype = "audio/mpeg", filesize) {
+	this.getBlobFromFile = function (file, filetype = "audio/mpeg") {
+		return new Promise((resolve, reject) => {
+			var reader = new FileReader();
 
-		storage_device.root.getFile(path, {}, function(fileEntry) {
+			reader.onloadend = function() {
+				console.log('loaded file from ' + file.name);
+				resolve(new Blob([new Uint8Array(this.result)], { type: filetype }))
+			};
 
-			fileEntry.file(function (file) {
-				if (filesize > 0) {
-					file.end = file.start + filesize;
-				}
-
-				var reader = new FileReader();
-
-				reader.onloadend = function() {
-					console.log('loaded file from ' + file.name);
-					success(new Blob([new Uint8Array(this.result)], { type: filetype }))
-				};
-
-				reader.readAsArrayBuffer(file);
-
-			}, function() {
-				console.log('Error loading from ' + path, this.error);
-				error && error(this.error);
-			});},
-		console.error);
+			reader.readAsArrayBuffer(file);
+		})
 	}
     
     this.storage_device = storage_device;

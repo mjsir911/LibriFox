@@ -3,6 +3,8 @@ var MediaDB = (function() {
 		EventManager.call(this);
 		this.mediaType = mediaType;
 		this.metadataParser = metadataParser
+		this.fileManager = options.fileManager
+
 	}
 	MediaDB.prototype = Object.create(EventManager.prototype);
 	MediaDB.prototype.addEventListener = function(event_name, callback) { 
@@ -11,15 +13,19 @@ var MediaDB = (function() {
 		}
 		this.on(event_name, callback);
 	}
+	
+
+	this.walk = function(fileSystem) {
+		return new Promise((resolve, reject) => fileSystem.createReader().readEntries(resolve, reject));
+	}
     //    name: // the filename
     //    type: // the file type
     //    size: // the file size
     //    date: // file mod time
     //    metadata: // whatever object the metadata parser returns
 	MediaDB.prototype.enumerate = function(callback) { 
-		// Iterate through all media files in the directory
-		// do callback on any media file in the directory {'name': path_of_file, 'metadata': something?}
 		var that = this;
+		// Iterate over librifox installed books
 		asyncStorage.length(function(length) {
 			for (let i = 0; i < length; i++) {
 				asyncStorage.key(i, function(key) {
@@ -51,6 +57,23 @@ var MediaDB = (function() {
 				});
 			}
 		});
+
+		// iterate over ~/AudioBooks
+		// this is rushed
+		fileManager.walk("AudioBooks").then(
+			(entries) => entries.forEach(
+				(entry) => entry.file((file) => {
+					file.end = file.start + 10000; console.log(file); console.log(entry); fileManager.getBlobFromFile(file).then(
+						(blob) => this.metadataParser(blob, 
+							(metadata) => {
+								callback({name: entry.fullPath.slice(1), metadata: metadata})
+							}
+							, console.log)
+					)
+				})
+			)
+		)
+
 	}
 	return MediaDB
 }());
