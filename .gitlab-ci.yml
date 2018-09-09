@@ -1,7 +1,9 @@
-image: docker:dind
+compile_click:
+  image: clickable/ubuntu-sdk:16.04-armhf
+  before_script:
+    - pip install ssh://git@github.com:mjsir911/clickable.git
+    - npm install -g --unsafe-perm cordova@7.0.0
+  script: 
+    - clickable --container-mode build
+    - clickable --container-mode click-build
 
-before_script:
-  - apk add --update python3 && easy_install pip && pip install git+https://github.com/mjsir911/clickable
-
-job1:
-  script: "docker run docker:dind"
