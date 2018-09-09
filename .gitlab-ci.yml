@@ -27,6 +27,8 @@ deploy_to_openstore:
     - tags
   before_script:
     - pip3 install git+https://github.com/mjsir911/clickable.git
-
   script:
     clickable --container-mode publish
+  environment:
+    name: production
+    url: https://open-store.io/app/librifox.mjsir911
