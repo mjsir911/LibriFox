@@ -2,3 +2,6 @@ image: docker:dind
 
 before_script:
   - pip install git+https://github.com/mjsir911/clickable
+
+job1:
+  script: "echo hi"
