@@ -1,7 +1,12 @@
-image: docker:dind
+image: python:3.7.0-stretch
 
 before_script:
+  - apt update && apt install apt-transport-https ca-certificates curl software-properties-common 
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+  - add-apt-repository \ "deb [arch=amd64] https://download.docker.com/linux/debian \ $(lsb_release -cs) \ stable"
+  - apt update && apt install docker-ce
   - pip install git+https://github.com/mjsir911/clickable
+  - apt clean
 
 job1:
-  script: "echo hi"
+  script: "docker run docker:dind"
