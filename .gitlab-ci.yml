@@ -7,4 +7,7 @@ compile_click:
   script: 
     - clickable --container-mode build
     - clickable --container-mode click-build
+  artifacts:
+    paths:
+      - platforms/ubuntu/ubuntu-sdk-*/*/prefix/*.click
 
