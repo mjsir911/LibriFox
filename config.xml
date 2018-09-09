@@ -18,6 +18,7 @@
     <plugin name="cordova-plugin-file" spec="^5.0.0" />
     <plugin name="cordova-plugin-file-transfer" spec="^1.7.1" />
     <plugin name="cordova-plugin-media" spec="^4.0.0" />
+    <plugin name="cordova-plugin-playlist" spec="git+https://github.com/mjsir911/cordova-plugin-playlist.git" />
     <plugin name="cordova-plugin-whitelist" spec="^1.3.3" />
     <engine name="ubuntu" spec="~4.3.4" />
 </widget>
