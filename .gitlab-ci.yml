@@ -5,29 +5,30 @@ stages:
 compile_click_tag:
   image: clickable/ubuntu-sdk:16.04-armhf
   stage: build
-  only: tags
+  only:
+    - tags
   before_script:
     - apt-get update && apt-get install -y nodejs-legacy python3-pip npm qtpositioning5-dev:armhf
     - pip3 install git+https://github.com/mjsir911/clickable.git
     - npm install -g --unsafe-perm cordova@7.0.0
-  script: 
+  script:
     - clickable --container-mode build
     - clickable --container-mode click-build
   artifacts:
     paths:
       - platforms/ubuntu/ubuntu-sdk-*/*/prefix/*.click
-    expire_in: forever
 
 
 compile_click_prod:
   image: clickable/ubuntu-sdk:16.04-armhf
   stage: build
-  only: prod
+  only:
+    - prod
   before_script:
     - apt-get update && apt-get install -y nodejs-legacy python3-pip npm qtpositioning5-dev:armhf
     - pip3 install git+https://github.com/mjsir911/clickable.git
     - npm install -g --unsafe-perm cordova@7.0.0
-  script: 
+  script:
     - clickable --container-mode build
     - clickable --container-mode click-build
   artifacts:
@@ -39,12 +40,12 @@ compile_click_prod:
 deploy_click_to_openstore:
   image: python:3
   stage: deploy
-  dependencies: compile_click_prod
-  only: prod
+  dependencies:
+    - compile_click_prod
+  only:
+    - prod
   before_script:
-    pip3 install git+https://github.com/mjsir911/clickable.git
+    - pip3 install git+https://github.com/mjsir911/clickable.git
 
   script:
     clickable --container-mode publish
-
-
