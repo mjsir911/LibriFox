@@ -1,7 +1,7 @@
 image: docker:dind
 
 before_script:
-  - apk add --update python && easy_install pip && pip install git+https://github.com/mjsir911/clickable
+  - apk add --update python3 && easy_install pip && pip install git+https://github.com/mjsir911/clickable
 
 job1:
   script: "docker run docker:dind"
