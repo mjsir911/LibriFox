@@ -60,18 +60,16 @@ var MediaDB = (function() {
 
 		// iterate over ~/AudioBooks
 		// this is rushed
-		fileManager.walk("AudioBooks").then(
-			(entries) => entries.forEach(
-				(entry) => entry.file((file) => {
-					file.end = file.start + 10000; console.log(file); console.log(entry); fileManager.getBlobFromFile(file).then(
-						(blob) => this.metadataParser(blob, 
-							(metadata) => {
-								callback({name: entry.fullPath.slice(1), metadata: metadata})
-							}
-							, console.log)
-					)
-				})
-			)
+		fileManager.walk("AudioBooks")(
+			(entry) => entry.file((file) => {
+				file.end = file.start + 10000; console.log(file); console.log(entry); fileManager.getBlobFromFile(file).then(
+					(blob) => this.metadataParser(blob, 
+						(metadata) => {
+							callback({name: entry.fullPath.slice(1), metadata: metadata})
+						}
+						, console.log)
+				)
+			})
 		)
 
 	}
