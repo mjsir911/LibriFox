@@ -15,6 +15,7 @@ compile_click:
   artifacts:
     paths:
       - platforms/ubuntu/ubuntu-sdk-*/*/prefix/*.click
+    expire_in: 1 hour
 
 deploy_to_openstore:
   image: python:3
@@ -30,3 +31,7 @@ deploy_to_openstore:
   environment:
     name: production
     url: https://open-store.io/app/librifox.mjsir911
+  artifacts:
+    paths:
+      - platforms/ubuntu/ubuntu-sdk-*/*/prefix/*.click
+    expire_in: forever
