@@ -1849,7 +1849,7 @@ function FileManager(args) {
 					}}));
     };
 
-	this.walk = (subdirectory = "/") => new Promise((resolve, reject) => this.storage_device.root.getDirectory(subdirectory, {}, (subdirectory_dir) => subdirectory_dir.createReader().readEntries(resolve, reject), console.err))
+	this.walk = (subdirectory = "/") => new Promise((resolve, reject) => this.storage_device.root.getDirectory(subdirectory, {}, (subdirectory_dir) => subdirectory_dir.createReader().readEntries(resolve, reject), reject))
 
 	this.mkdir = function(dirpath, root) {
 		return new Promise((resolve, reject) => {
