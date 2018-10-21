@@ -62,7 +62,7 @@ var MediaDB = (function() {
 		// this is rushed
 		fileManager.walk("AudioBooks")(
 			(entry) => entry.file((file) => {
-				file.end = file.start + 10000; console.log(file); console.log(entry); fileManager.getBlobFromFile(file).then(
+				console.log(entry); fileManager.getBlobFromFile(file).then(
 					(blob) => this.metadataParser(blob, 
 						(metadata) => {
 							callback({name: entry.fullPath.slice(1), metadata: metadata})
