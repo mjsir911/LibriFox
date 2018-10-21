@@ -9,8 +9,8 @@ compile_click:
     - apt-get update && apt-get install -y nodejs-legacy python3-pip npm qtpositioning5-dev:armhf
     - pip3 install git+https://github.com/mjsir911/clickable.git
     - npm install -g --unsafe-perm cordova@7.0.0
-  script:
     - sed -i -e "s#0.0.0#$(cat status/VERSION)#" config.xml package.json
+  script:
     - clickable --container-mode build
     - clickable --container-mode click-build
   artifacts:
@@ -27,6 +27,7 @@ deploy_to_openstore:
     - tags
   before_script:
     - pip3 install git+https://github.com/mjsir911/clickable.git
+    - sed -i -e "s#0.0.0#$(cat status/VERSION)#" config.xml package.json
   script:
     clickable --container-mode publish
   environment:
