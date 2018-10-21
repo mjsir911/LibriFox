@@ -1,3 +1,4 @@
 {
-	"sdk": "16.04"
+	"sdk": "16.04",
+	"template": "cordova"
 }
