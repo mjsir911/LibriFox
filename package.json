@@ -1,7 +1,7 @@
 {
     "name": "librifox.mjsir911",
     "displayName": "LibriFox",
-    "version": "1.0.1",
+    "version": "0.0.0",
     "description": "Librivox audio book player",
     "main": "index.js",
     "bugs": {
