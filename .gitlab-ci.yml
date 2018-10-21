@@ -35,4 +35,3 @@ deploy_to_openstore:
   artifacts:
     paths:
       - platforms/ubuntu/ubuntu-sdk-*/*/prefix/*.click
-    expire_in: forever
