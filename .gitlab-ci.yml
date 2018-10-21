@@ -5,8 +5,6 @@ stages:
 compile_click:
   image: clickable/ubuntu-sdk:16.04-armhf
   stage: build
-  only:
-    - tags
   before_script:
     - apt-get update && apt-get install -y nodejs-legacy python3-pip npm qtpositioning5-dev:armhf
     - pip3 install git+https://github.com/mjsir911/clickable.git
