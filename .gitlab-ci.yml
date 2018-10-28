@@ -5,18 +5,18 @@ stages:
 compile_click:
   image: clickable/ubuntu-sdk:16.04-armhf
   stage: build
-  only:
-    - tags
   before_script:
     - apt-get update && apt-get install -y nodejs-legacy python3-pip npm qtpositioning5-dev:armhf
     - pip3 install git+https://github.com/mjsir911/clickable.git
     - npm install -g --unsafe-perm cordova@7.0.0
+    - sed -i -e "s#0.0.0#$(cat status/VERSION)#" config.xml package.json
   script:
     - clickable --container-mode build
     - clickable --container-mode click-build
   artifacts:
     paths:
       - platforms/ubuntu/ubuntu-sdk-*/*/prefix/*.click
+    expire_in: 1 hour
 
 deploy_to_openstore:
   image: python:3
@@ -27,8 +27,12 @@ deploy_to_openstore:
     - tags
   before_script:
     - pip3 install git+https://github.com/mjsir911/clickable.git
+    - sed -i -e "s#0.0.0#$(cat status/VERSION)#" config.xml package.json
   script:
     clickable --container-mode publish
   environment:
     name: production
     url: https://open-store.io/app/librifox.mjsir911
+  artifacts:
+    paths:
+      - platforms/ubuntu/ubuntu-sdk-*/*/prefix/*.click

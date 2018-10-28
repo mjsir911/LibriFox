@@ -58,22 +58,34 @@ var MediaDB = (function() {
 			}
 		});
 
+		var _this = this;
 		// iterate over ~/AudioBooks
 		// this is rushed
-		fileManager.walk("AudioBooks").then(
-			(entries) => entries.forEach(
+		LazyLoader.load('js/lib/blobview.js').then(() => {
+			fileManager.walk("AudioBooks")(
 				(entry) => entry.file((file) => {
-					file.end = file.start + 10000; console.log(file); console.log(entry); fileManager.getBlobFromFile(file).then(
-						(blob) => this.metadataParser(blob, 
-							(metadata) => {
-								callback({name: entry.fullPath.slice(1), metadata: metadata})
+					file.end = file.start + 10;
+					fileManager.getBlobFromFile(file).then(
+						(blob) =>  BlobView.get(blob, 0, 10,
+							function (blobview, error) {
+								blobview.seek(6);
+								var size = blobview.readID3Uint28BE()
+								entry.file((file) => {
+									file.end = file.start + size;
+									fileManager.getBlobFromFile(file).then(
+										blob => _this.metadataParser(blob,
+											(metadata) => callback({name: entry.fullPath.slice(1), metadata: metadata}),
+											console.err
+										)
+									)
+								})
 							}
-							, console.log)
+						)
 					)
 				})
 			)
-		)
-
+		})
 	}
+
 	return MediaDB
 }());
