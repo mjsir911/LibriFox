@@ -1016,6 +1016,7 @@ function StoredBookPageGenerator(args) {
     var that = this,
         player_data_handle = args.player_data_handle,
 		mediaManager = args.mediaManager,
+		fileManager = args.fileManager,
         ui_state = {};
     
     this.getDataHandle = function () {
@@ -1038,6 +1039,11 @@ function StoredBookPageGenerator(args) {
                 storage_devices = [];
             
             ui_state.book.eachChapter(function (chapter_ref) {
+				console.log("hi", chapter_ref)
+				fileManager.getNativeURL(chapter_ref.path).then(realpath => {
+					window.plugins.AudioPlayer.default.addItem(console.log, console.err, {assetUrl: realpath})
+				})
+				console.log(fileManager)
                 if (user_progress && !user_progress_viable) {
                     user_progress_viable = (chapter_ref.path === user_progress.path);
                 }
@@ -2134,6 +2140,7 @@ function createApp () {
     }),
     storedBookPageGenerator = new StoredBookPageGenerator({
         player_data_handle: bookPlayerPageGenerator.getDataHandle(),
+        fileManager: fileManager,
 		mediaManager: mediaManager
     }),
     searchedBookPageGenerator = new SearchedBookPageGenerator({
