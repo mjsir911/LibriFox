@@ -23,4 +23,4 @@ test: install
 RM += -r
 .PHONY: clean
 clean: 
-	$(RM) plugins platforms node_modules
+	$(RM) plugins platforms node_modules package-lock.json
