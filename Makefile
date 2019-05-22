@@ -24,3 +24,4 @@ RM += -r
 .PHONY: clean
 clean: 
 	$(RM) plugins platforms node_modules package-lock.json
+	$(CLICKABLE) clean
