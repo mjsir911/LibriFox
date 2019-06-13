@@ -14,7 +14,7 @@ compile_click:
     - clickable --container-mode click-build
   artifacts:
     paths:
-      - build/*.click
+      - build
     expire_in: 1 hour
 
 deploy_to_openstore:
